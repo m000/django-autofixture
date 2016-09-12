@@ -119,9 +119,6 @@ class AutoFixtureBase(object):
         (fields.TextField, generators.LoremGenerator),
         (fields.TimeField, generators.TimeGenerator),
         (ImageField, generators.ImageGenerator),
-
-        # XXX: Importing the GenericForeignKey model triggers an AppRegistryNotReady exception.
-        (get_GenericForeignKey(), generators.GenericFKSelector),
     ))
 
     # UUIDField was added in Django 1.8
@@ -187,6 +184,9 @@ class AutoFixtureBase(object):
             self.none_p = none_p
         if overwrite_defaults is not None:
             self.overwrite_defaults = overwrite_defaults
+
+        # GFK generator must be added at runtime to avoid raising an AppRegistryNotReady exception.
+        self.field_to_generator[get_GenericForeignKey()] = generators.GenericFKSelector
 
         if follow_fk is not None:
             self.follow_fk = follow_fk
@@ -526,16 +526,19 @@ class AutoFixtureBase(object):
         '''
         tries = self.tries
         instance = self.model()
-        process = copy.copy(instance._meta.fields)
-
-        #remove genericfk field components, add virtualfield instead
         generic_fields = instance._meta.virtual_fields
+
+        # in the presence of genericfk, copy fields into a mutable list
+        process = instance._meta.fields if not generic_fields else list(copy.copy(instance._meta.fields))
+
+        # remove genericfk field components, add virtualfield instead
         for field in generic_fields:
             if isinstance(field, get_GenericForeignKey()):
                 process.append(field)
                 ct_field = instance._meta.get_field(field.ct_field)
                 fk_field = instance._meta.get_field(field.fk_field)
                 process = [f for f in process if not f in [ct_field, fk_field]]
+
         while process and tries > 0:
             for field in process:
                 self.process_field(instance, field)
