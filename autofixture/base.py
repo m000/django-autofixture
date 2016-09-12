@@ -424,6 +424,11 @@ class AutoFixtureBase(object):
 
     def process_field(self, instance, field):
         value = self.get_value(field)
+        if autofixture.DEBUG:
+            print('%s: %s' % (
+                field.name,
+                value if value is not self.IGNORE_FIELD else 'IGNORED',
+            ))
         if value is self.IGNORE_FIELD:
             return
         setattr(instance, field.name, value)
@@ -586,6 +591,8 @@ class AutoFixtureBase(object):
         '''
         object_list = []
         for i in range(count):
+            if autofixture.DEBUG:
+                print('\n{0:-^70}'.format(' %s instance %d/%d ' % (self.model.__name__, i+1, count)))
             instance = self.create_one(commit=commit, **kwargs)
             object_list.append(instance)
         return object_list

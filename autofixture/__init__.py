@@ -14,6 +14,7 @@ else:
 
 __version__ = '0.12.2.dev1'
 
+DEBUG = True
 REGISTRY = {}
 
 
