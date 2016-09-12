@@ -671,7 +671,7 @@ class GenericFKSelector(Generator):
         self.generate_genericfk = generate_genericfk
         self.limit_ct_to = limit_ct_to or {}
         self.limit_ids_to = limit_ids_to
-        
+
     def get_ct(self):
         """
         Get content type object
@@ -691,7 +691,7 @@ class GenericFKSelector(Generator):
             raise GeneratorError(
                 """Found no contenttypes for filter params %s
                 that have already existing objects""" %self.limit_ct_to )
-        
+
     def get_object(self, content_type):
         # if option 'generate_genericfk'
         queryset = content_type.get_all_objects_for_this_type()
@@ -699,10 +699,10 @@ class GenericFKSelector(Generator):
             return InstanceGenerator(autofixture=AutoFixture(
                                             content_type.model_class()),
                          limit_choices_to=self.limit_ids_to).generate()
-        else:    
+        else:
             return InstanceSelector(queryset=queryset,
                          limit_choices_to=self.limit_ids_to).generate()
-        
+
     def generate(self):
         ct = self.get_ct()
         return self.get_object(ct)

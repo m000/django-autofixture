@@ -218,7 +218,7 @@ class AutoFixtureBase(object):
             self.generate_m2m = Link(self.generate_m2m)
         if generate_genericfk is not None:
             self.generate_genericfk = generate_genericfk
-        
+
         for constraint in self.default_constraints:
             self.add_constraint(constraint)
 
@@ -279,7 +279,7 @@ class AutoFixtureBase(object):
         '''
         if isinstance(field, GenericForeignKey):
             field = self._normalize_genericfk_field(field)
-        
+
         if isinstance(field, fields.AutoField):
             return None
         if self.is_inheritance_parent(field):
@@ -521,7 +521,7 @@ class AutoFixtureBase(object):
         tries = self.tries
         instance = self.model()
         process = copy.copy(instance._meta.fields)
-        
+
         #remove genericfk field components, add virtualfield instead
         generic_fields = instance._meta.virtual_fields
         for field in generic_fields:
