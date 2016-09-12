@@ -4,8 +4,6 @@ import copy
 from django.db import models
 from django.db.models import fields, ImageField
 from django.db.models.fields import related
-from django.contrib.contenttypes.fields import GenericRelation, GenericForeignKey
-from django.utils.datastructures import SortedDict
 from django.utils.six import with_metaclass
 
 import autofixture
@@ -14,6 +12,7 @@ from autofixture.values import Values
 from autofixture.compat import (
     OrderedDict,
     get_GenericRelation,
+    get_GenericForeignKey,
     get_remote_field,
     get_remote_field_to,
     getargnames,
@@ -120,7 +119,9 @@ class AutoFixtureBase(object):
         (fields.TextField, generators.LoremGenerator),
         (fields.TimeField, generators.TimeGenerator),
         (ImageField, generators.ImageGenerator),
-        (GenericForeignKey, generators.GenericFKSelector)
+
+        # XXX: Importing the GenericForeignKey model triggers an AppRegistryNotReady exception.
+        (get_GenericForeignKey(), generators.GenericFKSelector),
     ))
 
     # UUIDField was added in Django 1.8
@@ -277,7 +278,7 @@ class AutoFixtureBase(object):
         specified field will be ignored (e.g. if no matching generator was
         found).
         '''
-        if isinstance(field, GenericForeignKey):
+        if isinstance(field, get_GenericForeignKey()):
             field = self._normalize_genericfk_field(field)
 
         if isinstance(field, fields.AutoField):
@@ -400,7 +401,7 @@ class AutoFixtureBase(object):
                     **kwargs)
         if isinstance(field, ImageField):
             return generators.ImageGenerator(storage=field.storage, **kwargs)
-        if isinstance(field, GenericForeignKey):
+        if isinstance(field, get_GenericForeignKey()):
             return generators.GenericFKSelector(generate_genericfk=self.generate_genericfk)
 
         for field_class, generator in self.field_to_generator.items():
@@ -525,7 +526,7 @@ class AutoFixtureBase(object):
         #remove genericfk field components, add virtualfield instead
         generic_fields = instance._meta.virtual_fields
         for field in generic_fields:
-            if isinstance(field, GenericForeignKey):
+            if isinstance(field, get_GenericForeignKey()):
                 process.append(field)
                 ct_field = instance._meta.get_field(field.ct_field)
                 fk_field = instance._meta.get_field(field.fk_field)

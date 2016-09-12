@@ -14,7 +14,6 @@ else:
 
 __version__ = '0.12.2.dev1'
 
-
 REGISTRY = {}
 
 
@@ -213,8 +212,7 @@ def autodiscover():
         try:
             importlib.import_module("%s.autofixtures" % app)
         except Exception as e:
-            warnings.warn(u'Error while importing %s.autofixtures: %r' %
-                (app, e))
+            warnings.warn(u'Error while importing %s.autofixtures: %r' % (app, e))
 
     for app, app_path in app_paths.items():
         try:
