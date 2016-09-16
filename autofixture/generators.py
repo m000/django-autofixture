@@ -518,8 +518,8 @@ class MediaFilePathGenerator(FilePathGenerator):
 
 class InstanceGenerator(Generator):
     '''
-    Naive support for ``limit_choices_to``. It assignes specified value to
-    field for dict items that have one of the following form::
+    Naive support for ``limit_choices_to``. It assigns specified value to
+    field for dict items that have one of the following form:
 
         fieldname: value
         fieldname__exact: value
@@ -559,27 +559,29 @@ class InstanceSelector(Generator):
     '''
     Select one or more instances from a queryset.
     '''
-    empty_value = []
 
-    def __init__(self, queryset, min_count=None, max_count=None, fallback=None,
-        limit_choices_to=None, *args, **kwargs):
+    def __init__(self, queryset, limit_choices_to=None, min_count=None, max_count=None, fallback=None, *args, **kwargs):
         from django.db.models.query import QuerySet
         if not isinstance(queryset, QuerySet):
             queryset = queryset._default_manager.all()
         limit_choices_to = limit_choices_to or {}
         self.queryset = queryset.filter(**limit_choices_to)
-        self.fallback = fallback
         self.min_count = min_count
         self.max_count = max_count
+        self.fallback = fallback
+        if self.max_count is not None:
+            self.empty_value = []
         super(InstanceSelector, self).__init__(*args, **kwargs)
 
     def generate(self):
         if self.max_count is None:
+            # return only one item
             try:
                 return self.queryset.order_by('?')[0]
             except IndexError:
                 return self.fallback
         else:
+            # return multiple items
             min_count = self.min_count or 0
             count = random.randint(min_count, self.max_count)
             return self.queryset.order_by('?')[:count]
