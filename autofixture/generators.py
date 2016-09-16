@@ -693,10 +693,10 @@ class GenericFKSelector(Generator):
             )
 
     def get_object(self, content_type):
-        from autofixture.base import AutoFixture
+        from autofixture import get as get_autofixture
         if self.generate_genericfk:
             return InstanceGenerator(
-                autofixture=AutoFixture(content_type.model_class()),
+                autofixture=get_autofixture(content_type.model_class()),
                 limit_choices_to=self.limit_ids_to
             ).generate()
         else:
