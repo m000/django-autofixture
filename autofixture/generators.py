@@ -686,7 +686,7 @@ class GenericFKSelector(Generator):
         else:
             # find a contenttype with some existing objects
             for ct in queryset.order_by("?"):
-                if ct.get_all_objects_for_this_type().count() > 0:
+                if ct.model_class().objects.count() > 0:
                     return ct
             raise GeneratorError(
                 'Found no objects for contenttypes matching filter params %s' % self.limit_ct_to
@@ -700,7 +700,7 @@ class GenericFKSelector(Generator):
                 limit_choices_to=self.limit_ids_to
             ).generate()
         else:
-            queryset = content_type.get_all_objects_for_this_type()
+            queryset = content_type.model_class().objects.all()
             return InstanceSelector(
                 queryset=queryset,
                 limit_choices_to=self.limit_ids_to
