@@ -11,6 +11,7 @@ from autofixture import constraints, generators, signals
 from autofixture.values import Values
 from autofixture.compat import (
     OrderedDict,
+    get_field,
     get_GenericRelation,
     get_GenericForeignKey,
     get_remote_field,
@@ -267,7 +268,7 @@ class AutoFixtureBase(object):
         field_copy = copy.copy(field)
         field_copy.default = fields.NOT_PROVIDED
         fk_field_name = field.fk_field
-        field_copy.null = self.model._meta.get_field_by_name(fk_field_name)[0].null
+        field_copy.null = get_field(self.model, fk_field_name).null
         field_copy.choices = []
         return field_copy
 

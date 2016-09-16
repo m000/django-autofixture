@@ -653,7 +653,6 @@ class ImageGenerator(Generator):
             ContentFile(get_placeholder_image(width, height))
         )
 
-
 class UUIDGenerator(Generator):
     '''
     Generates random uuid4.
@@ -666,8 +665,7 @@ class GenericFKSelector(Generator):
     """
     Should return an instance of some object.
     """
-    def __init__(self, generate_genericfk=False, limit_ct_to=None,
-                                                limit_ids_to=None):
+    def __init__(self, generate_genericfk=False, limit_ct_to=None, limit_ids_to=None):
         self.generate_genericfk = generate_genericfk
         self.limit_ct_to = limit_ct_to or {}
         self.limit_ids_to = limit_ids_to
@@ -680,28 +678,33 @@ class GenericFKSelector(Generator):
         queryset = ContentType.objects.filter(**self.limit_ct_to)
         if not queryset:
             raise GeneratorError(
-                "Found no contenttypes for filter params %s" %self.limit_ct_to)
-        #get any old ct, we'll generate objects later
+                'Found no contenttypes for filter params %s' % self.limit_ct_to
+            )
         if self.generate_genericfk:
+            # get any old ct, we'll generate objects later
             return InstanceSelector(queryset=queryset).generate()
-        else: # find a contenttype with some existing objects
+        else:
+            # find a contenttype with some existing objects
             for ct in queryset.order_by("?"):
                 if ct.get_all_objects_for_this_type().count() > 0:
                     return ct
             raise GeneratorError(
-                """Found no contenttypes for filter params %s
-                that have already existing objects""" %self.limit_ct_to )
+                'Found no objects for contenttypes matching filter params %s' % self.limit_ct_to
+            )
 
     def get_object(self, content_type):
-        # if option 'generate_genericfk'
-        queryset = content_type.get_all_objects_for_this_type()
+        from autofixture.base import AutoFixture
         if self.generate_genericfk:
-            return InstanceGenerator(autofixture=AutoFixture(
-                                            content_type.model_class()),
-                         limit_choices_to=self.limit_ids_to).generate()
+            return InstanceGenerator(
+                autofixture=AutoFixture(content_type.model_class()),
+                limit_choices_to=self.limit_ids_to
+            ).generate()
         else:
-            return InstanceSelector(queryset=queryset,
-                         limit_choices_to=self.limit_ids_to).generate()
+            queryset = content_type.get_all_objects_for_this_type()
+            return InstanceSelector(
+                queryset=queryset,
+                limit_choices_to=self.limit_ids_to
+            ).generate()
 
     def generate(self):
         ct = self.get_ct()
