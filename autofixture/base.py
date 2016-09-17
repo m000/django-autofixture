@@ -410,7 +410,7 @@ class AutoFixtureBase(object):
                 return generator(**kwargs)
         return None
 
-    def get_value(self, field):
+    def get_value(self, field, instance=None):
         '''
         Return a random value that can be assigned to the passed *field*
         instance.
@@ -420,11 +420,11 @@ class AutoFixtureBase(object):
         generator = self._field_generators[field]
         if generator is None:
             return self.IGNORE_FIELD
-        value = generator()
+        value = generator(instance=instance)
         return value
 
     def process_field(self, instance, field):
-        value = self.get_value(field)
+        value = self.get_value(field, instance)
         if autofixture.DEBUG:
             print('%s: %s' % (
                 field.name,

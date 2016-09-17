@@ -71,8 +71,12 @@ class Generator(object):
         value = self.generate()
         return self.coerce(value)
 
-    def __call__(self):
+    def get_value_for_instance(self, instance=None):
+        self.instance = instance
         return self.get_value()
+
+    def __call__(self, instance=None):
+        return self.get_value_for_instance(instance)
 
 
 class StaticGenerator(Generator):
